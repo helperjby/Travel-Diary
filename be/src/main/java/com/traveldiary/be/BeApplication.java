@@ -1,5 +1,6 @@
 package com.traveldiary.be;
 
+<<<<<<< HEAD
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -32,3 +33,14 @@ public class BeApplication extends SpringBootServletInitializer {
 //        SpringApplication.run(BeApplication.class, args);
 //    }
 //}
+=======
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+@SpringBootApplication
+public class BeApplication {
+    public static void main(String[] args) {
+        SpringApplication.run(BeApplication.class, args);
+    }
+}
+>>>>>>> a2538ef5a02415223ec2a562b56d0f18b1e1be09
