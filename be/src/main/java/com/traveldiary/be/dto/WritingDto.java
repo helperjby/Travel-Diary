@@ -1,11 +1,15 @@
 package com.traveldiary.be.dto;
 
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.traveldiary.be.dto.WritingPhotoDTO;
+
 import java.time.LocalDate;
 import java.util.List;
-import org.springframework.web.multipart.MultipartFile;
 
-public class WritingDto {
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class WritingDTO {
+    private Integer id; // 추가된 필드
     private String title;  // 제목
     private String content;  // 내용
     private LocalDate travel_date;  // 여행 날짜
@@ -14,12 +18,14 @@ public class WritingDto {
     private Boolean is_public;  // 공개/비공개 설정
     private List<String> photo;  // 첨부된 사진 파일 리스트
     private String url; // 지도 URL
+    private List<WritingPhotoDTO> writingPhotos; // 추가된 필드
 
     // 기본 생성자
-    public WritingDto() {}
+    public WritingDTO() {}
 
     // 모든 필드를 초기화하는 생성자
-    public WritingDto(String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url) {
+    public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos) {
+        this.id = id; // 추가된 필드
         this.title = title;
         this.content = content;
         this.travel_date = travel_date;
@@ -28,9 +34,12 @@ public class WritingDto {
         this.is_public = is_public;
         this.photo = photo;
         this.url = url;
+        this.writingPhotos = writingPhotos; // 추가된 필드
     }
 
     // Getters and Setters
+    public Integer getId() { return id; } // 추가된 메서드
+    public void setId(Integer id) { this.id = id; } // 추가된 메서드
 
     public String getTitle() {
         return title;
@@ -96,4 +105,11 @@ public class WritingDto {
         this.url = url;
     }
 
+    public List<WritingPhotoDTO> getWritingPhotos() {
+        return writingPhotos;
+    }
+
+    public void setWritingPhotos(List<WritingPhotoDTO> writingPhotos) {
+        this.writingPhotos = writingPhotos;
+    }
 }

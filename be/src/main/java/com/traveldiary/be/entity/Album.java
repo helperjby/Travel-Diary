@@ -1,44 +1,45 @@
 package com.traveldiary.be.entity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
-@Setter
 @Getter
+@Setter
 @Entity
 @Table(name = "diaries")
 public class Album {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
+    private int id;  // 기본 키
 
     @Column(name = "name", nullable = false)
-    private String name;
+    private String name;  // 앨범 이름
 
     @Column(name = "start_date", nullable = false)
-    private LocalDate startDate;
+    private LocalDate startDate;  // 시작 날짜
 
     @Column(name = "final_date", nullable = false)
-    private LocalDate finalDate;
+    private LocalDate finalDate;  // 종료 날짜
 
     @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt = LocalDateTime.now();
+    private LocalDateTime createdAt = LocalDateTime.now();  // 생성 시간
 
     @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt;  // 수정 시간
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id")
-    private Users user;
+    @JoinColumn(name = "user_id")  // 데이터베이스 필드명은 user_id
+    @JsonBackReference
+    private Users user;  // 사용자 (객체 관계를 유지)
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
-    @JsonIgnore
-    private List<WritingDiary> writingDiaries;
+    private List<WritingDiary> writingDiaries = new ArrayList<>();  // 일기들 초기화
 }

@@ -1,119 +1,110 @@
 package com.traveldiary.be.service;
 
+import com.traveldiary.be.repository.WritingPhotoRepository;
+import com.traveldiary.be.repository.AlbumRepository;
 import com.traveldiary.be.entity.WritingDiary;
 import com.traveldiary.be.entity.WritingPhoto;
-import com.traveldiary.be.repository.WritingPhotoRepository;
+import com.traveldiary.be.entity.Album;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class WritingPhotoService {
 
-    private final WritingPhotoRepository writingPhotoRepository;
+    @Value("${file.upload-dir}")
+    private String uploadDir;
 
     @Autowired
-    public WritingPhotoService(WritingPhotoRepository writingPhotoRepository) {
-        this.writingPhotoRepository = writingPhotoRepository;
+    private WritingPhotoRepository writingPhotoRepository;
+
+    @Autowired
+    private AlbumRepository albumRepository;
+
+    /**
+     * 파일 저장 메서드
+     *
+     * @param files 파일 목록
+     * @param diary 일기 엔티티
+     * @return 저장된 파일 이름 목록
+     * @throws IOException 파일 저장 중 오류 발생 시
+     */
+    public List<String> storeFiles(List<MultipartFile> files, WritingDiary diary) throws IOException {
+        List<String> fileNames = new ArrayList<>();
+        Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
+
+        // 업로드 디렉토리가 존재하지 않으면 생성
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        for (MultipartFile file : files) {
+            String originalFilename = file.getOriginalFilename();
+            String uniqueFileName = generateUniqueFileName(originalFilename, diary.getId());
+            Path destinationPath = uploadPath.resolve(uniqueFileName).normalize();
+
+            Files.copy(file.getInputStream(), destinationPath, StandardCopyOption.REPLACE_EXISTING);
+
+            fileNames.add(uniqueFileName);
+        }
+
+        return fileNames;
     }
 
     /**
-     * 고유한 파일 이름을 생성하는 메서드
+     * 고유한 파일 이름 생성 메서드
      *
-     * @param originalFileName 원본 파일 이름
+     * @param originalFilename 원본 파일 이름
+     * @param diaryId 일기 ID
      * @return 고유한 파일 이름
      */
-    public String generateUniqueFileName(String originalFileName) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmss");
-        String timestamp = dateFormat.format(new Date());
+    private String generateUniqueFileName(String originalFilename, Number diaryId) {
+        String uniqueFileName = diaryId + "_" + UUID.randomUUID() + "_" + originalFilename;
 
-        int lastDotIndex = originalFileName.lastIndexOf('.');
-        String fileNameWithoutExtension = lastDotIndex != -1 ? originalFileName.substring(0, lastDotIndex) : originalFileName;
-        String fileExtension = lastDotIndex != -1 ? originalFileName.substring(lastDotIndex) : "";
+        while (writingPhotoRepository.existsByPhoto(uniqueFileName)) {
+            uniqueFileName = diaryId + "_" + UUID.randomUUID() + "_" + originalFilename;
+        }
 
-        return fileNameWithoutExtension + "_" + timestamp + fileExtension;
+        return uniqueFileName;
     }
 
     /**
-     * 파일을 삭제하는 메서드
+     * 파일 삭제 메서드
      *
-     * @param fileName 삭제할 파일 이름
+     * @param fileName 파일 이름
      */
     public void deleteFile(String fileName) {
-        String uploadDir = System.getProperty("user.home") + "/Desktop/uploads"; // 바탕화면의 uploads 디렉토리 경로 설정
-        File file = new File(uploadDir + File.separator + fileName);
-        if (file.exists()) {
-            file.delete();
-        }
-    }
-
-    /**
-     * 사진 ID로 사진을 삭제하는 메서드
-     *
-     * @param photoId 삭제할 사진 ID
-     */
-    public void deletePhotoById(Long photoId) {
-        writingPhotoRepository.deleteById(photoId);
-    }
-
-    /**
-     * 파일을 저장하고 저장된 파일의 정보를 반환하는 메서드
-     *
-     * @param file  저장할 파일
-     * @param diary 연관된 다이어리 엔터티
-     * @return 저장된 파일의 정보
-     */
-    public FileUploadResponse storeFile(MultipartFile file, WritingDiary diary) {
-        String uploadDir = System.getProperty("user.home") + "/Desktop/uploads"; // 바탕화면의 uploads 디렉토리 경로 설정
-
-        if (file.isEmpty()) {
-            throw new RuntimeException("Failed to store empty file.");
-        }
-
+        Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
         try {
-            String uniqueFileName = generateUniqueFileName(file.getOriginalFilename());
-            Path uploadPath = Paths.get(uploadDir, uniqueFileName);
-            Files.createDirectories(uploadPath.getParent());
-
-            // 파일을 저장할 경로 설정
-            file.transferTo(uploadPath.toFile());
-
-            // WritingPhoto 엔티티 생성 및 저장
-            WritingPhoto writingPhoto = new WritingPhoto();
-            writingPhoto.setPhoto(uniqueFileName);
-            writingPhoto.setDiary(diary);  // 다이어리와 연관 설정
-            writingPhoto = writingPhotoRepository.save(writingPhoto);
-
-            // FileUploadResponse 객체 생성 후 photoId와 uniqueFileName 설정
-            return new FileUploadResponse(writingPhoto.getPhotoId(), uniqueFileName);
+            Files.deleteIfExists(filePath);
         } catch (IOException e) {
-            throw new RuntimeException("Failed to store file.", e);
+            // 로그에 오류 기록
+            e.printStackTrace();
         }
     }
 
     /**
-     * 여러 파일을 저장하고 저장된 파일들의 정보를 반환하는 메서드
+     * 앨범에 해당하는 사진 조회 메서드
      *
-     * @param files 저장할 파일 배열
-     * @param diary 연관된 다이어리 엔터티
-     * @return 저장된 파일들의 정보 리스트
+     * @param albumId 앨범 ID
+     * @return 사진 목록
      */
-    public List<FileUploadResponse> storeFiles(MultipartFile[] files, WritingDiary diary) {
-        List<FileUploadResponse> fileInfos = new ArrayList<>();
-        for (MultipartFile file : files) {
-            FileUploadResponse fileInfo = storeFile(file, diary);
-            fileInfos.add(fileInfo);
+    public List<WritingPhoto> getPhotosByAlbum(int albumId) {
+        Album album = albumRepository.findById(albumId).orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
+        List<WritingPhoto> photos = new ArrayList<>();
+        for (WritingDiary diary : album.getWritingDiaries()) {
+            photos.addAll(diary.getWritingPhoto());
         }
-        return fileInfos;
+        return photos;
     }
 }

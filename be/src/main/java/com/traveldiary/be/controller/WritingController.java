@@ -1,129 +1,91 @@
 package com.traveldiary.be.controller;
 
-import com.traveldiary.be.dto.WritingDto;
-import com.traveldiary.be.entity.WritingDiary;
-import com.traveldiary.be.entity.WritingPhoto;
-import com.traveldiary.be.service.WritingPhotoService;
+import com.traveldiary.be.dto.WritingDTO;
 import com.traveldiary.be.service.WritingService;
-import com.traveldiary.be.service.FileUploadResponse;
+import com.traveldiary.be.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/diaries")
 public class WritingController {
 
     private final WritingService diaryService;
-    private final WritingPhotoService writingPhotoService;
+    private final UserService userService;
+
+    private static final Logger logger = LoggerFactory.getLogger(WritingController.class);
 
     @Autowired
-    public WritingController(WritingService diaryService, WritingPhotoService writingPhotoService) {
+    public WritingController(WritingService diaryService, UserService userService) {
         this.diaryService = diaryService;
-        this.writingPhotoService = writingPhotoService;
+        this.userService = userService;
     }
 
-    /**
-     * 새로운 일기 생성 메서드
-     *
-     * @param providerId 사용자 소셜 아이디
-     * @param diaryDto 일기 데이터 전송 객체
-     * @param photo 첨부된 사진 파일 리스트
-     * @return 생성된 일기 엔터티와 함께 응답
-     */
     @PostMapping(consumes = {"multipart/form-data"})
-    public ResponseEntity<WritingDiary> createWriting(@RequestParam String providerId, @RequestPart("diaryDto") WritingDto diaryDto, @RequestPart(required = false) List<MultipartFile> photo) {
+    public ResponseEntity<WritingDTO> createWriting(
+            @RequestParam Integer userId,
+            @RequestPart("diaryDto") WritingDTO diaryDto,
+            @RequestPart(required = false) List<MultipartFile> photo) {
         try {
-            WritingDiary diary = diaryService.createOrUpdateDiary(diaryDto, providerId);
+            logger.info("POST 요청 수신됨 - userId: {} 및 diaryDto: {}", userId, diaryDto);
 
-            if (photo != null) {
-                List<FileUploadResponse> photoInfos = photo.stream().map(file -> writingPhotoService.storeFile(file, diary)).collect(Collectors.toList());
-                diary.setWritingPhotos(
-                        photoInfos.stream()
-                                .map(info -> {
-                                    WritingPhoto writingPhoto = new WritingPhoto();
-                                    writingPhoto.setPhoto(info.getUniqueFileName());
-                                    writingPhoto.setDiary(diary);
-                                    writingPhoto.setPhotoId(info.getPhotoId()); // photo_id 설정
-                                    return writingPhoto;
-                                })
-                                .collect(Collectors.toList())
-                );
+            if (diaryDto.getFinal_date() == null) {
+                throw new IllegalArgumentException("최종 날짜는 null일 수 없습니다.");
             }
 
+            WritingDTO diary = diaryService.createDiary(diaryDto, userId, photo);
+
+            logger.info("일기 작성 성공 - ID: {}", diary.getId());
             return ResponseEntity.ok(diary);
-        } catch (RuntimeException e) {
+        } catch (IllegalArgumentException e) {
+            logger.error("IllegalArgumentException: {}", e.getMessage());
             return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            logger.error("Exception: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
         }
     }
 
-    /**
-     * 기존 일기 업데이트 메서드
-     *
-     * @param diaryId 업데이트할 일기의 ID
-     * @param providerId 사용자 소셜 아이디
-     * @param diaryDto 업데이트할 일기 데이터 전송 객체
-     * @param photo 첨부된 사진 파일 리스트
-     * @return 업데이트된 일기 엔터티와 함께 응답
-     */
     @PutMapping(value = "/{diaryId}", consumes = {"multipart/form-data"})
-    public ResponseEntity<WritingDiary> updateWriting(@PathVariable int diaryId, @RequestParam String providerId, @RequestPart("diaryDto") WritingDto diaryDto, @RequestPart(required = false) List<MultipartFile> photo) {
+    public ResponseEntity<WritingDTO> updateWriting(
+            @PathVariable int diaryId,
+            @RequestParam Integer userId,
+            @RequestPart("diaryDto") WritingDTO diaryDto,
+            @RequestPart(required = false) List<MultipartFile> photo) {
         try {
-            final WritingDiary diary = diaryService.findById(diaryId).orElseThrow(() -> new RuntimeException("Diary not found"));
+            logger.info("PUT 요청 수신됨 - diaryId: {}, userId: {} 및 diaryDto: {}", diaryId, userId, diaryDto);
 
-            diaryService.updateDiary(diaryId, diaryDto, providerId);
-
-            // 기존 사진 삭제
-            if (diary.getWritingPhotos() != null) {
-                for (WritingPhoto existingPhoto : diary.getWritingPhotos()) {
-                    writingPhotoService.deleteFile(existingPhoto.getPhoto());
-                    writingPhotoService.deletePhotoById(existingPhoto.getPhotoId());
-                }
-                diary.getWritingPhotos().clear();
+            if (diaryDto.getFinal_date() == null) {
+                throw new IllegalArgumentException("최종 날짜는 null일 수 없습니다.");
             }
 
-            // 새로운 사진 저장
-            if (photo != null) {
-                List<FileUploadResponse> photoInfos = photo.stream().map(file -> writingPhotoService.storeFile(file, diary)).toList();
-                diary.setWritingPhotos(
-                        photoInfos.stream()
-                                .map(info -> {
-                                    WritingPhoto writingPhoto = new WritingPhoto();
-                                    writingPhoto.setPhoto(info.getUniqueFileName());
-                                    writingPhoto.setDiary(diary);
-                                    writingPhoto.setPhotoId(info.getPhotoId()); // photo_id 설정
-                                    return writingPhoto;
-                                })
-                                .collect(Collectors.toList())
-                );
-            }
+            WritingDTO diary = diaryService.updateDiary(diaryId, diaryDto, userId, photo);
 
-            WritingDiary updatedDiary = diaryService.findById(diaryId).orElseThrow(() -> new RuntimeException("Diary not found"));
-            return ResponseEntity.ok(updatedDiary);
-        } catch (RuntimeException e) {
+            logger.info("일기 수정 성공 - ID: {}", diary.getId());
+            return ResponseEntity.ok(diary);
+        } catch (IllegalArgumentException e) {
+            logger.error("IllegalArgumentException: {}", e.getMessage());
             return ResponseEntity.badRequest().body(null);
+        } catch (Exception e) {
+            logger.error("Exception: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).body(null);
         }
     }
 
-
-    /**
-     * 일기 삭제 메서드
-     *
-     * @param diaryId 삭제할 일기의 ID
-     * @param providerId 사용자 소셜 아이디
-     * @return 삭제 요청에 대한 응답
-     */
     @DeleteMapping("/{diaryId}")
-    public ResponseEntity<Void> deleteWriting(@PathVariable int diaryId, @RequestParam String providerId) {
+    public ResponseEntity<Void> deleteWriting(@PathVariable int diaryId, @RequestParam Integer userId) {
         try {
-            diaryService.deleteDiary(diaryId, providerId);
+            diaryService.deleteDiary(diaryId, userId);
             return ResponseEntity.noContent().build();
-        } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().build();
+        } catch (Exception e) {
+            logger.error("Exception: {}", e.getMessage(), e);
+            return ResponseEntity.status(500).build();
         }
     }
 }

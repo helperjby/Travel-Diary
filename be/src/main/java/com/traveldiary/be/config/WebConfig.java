@@ -14,9 +14,10 @@ public class WebConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(@NotNull CorsRegistry registry) {
+                // 모든 도메인에서 /api/** 경로로 접근하는 요청에 대해 CORS 설정을 적용
                 registry.addMapping("/api/**")
                         .allowedOrigins("*")  // 필요에 따라 특정 도메인으로 변경
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS");// 허용되는 HTTP 메서드 설정
             }
         };
     }
