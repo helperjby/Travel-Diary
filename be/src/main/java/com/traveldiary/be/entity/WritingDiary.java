@@ -63,6 +63,9 @@ public class WritingDiary {
     @Column(name = "representative_image")
     private String representativeImage;  // 대표 이미지
 
+    @Column(name = "like_count", nullable = false)
+    private int likeCount;  // 좋아요 횟수
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

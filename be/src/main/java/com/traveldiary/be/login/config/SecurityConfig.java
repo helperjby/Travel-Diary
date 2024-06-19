@@ -33,8 +33,8 @@ public class SecurityConfig {
                 .oauth2Login(oauth2Login ->
                         oauth2Login
                                 .successHandler(oAuth2AuthenticationSuccessHandler)
-                );
-                //.csrf().disable(); // CSRF 보호 기능 비활성화
+                )
+                .csrf().disable(); // CSRF 보호 기능 비활성화
         return http.build();
     }
 
