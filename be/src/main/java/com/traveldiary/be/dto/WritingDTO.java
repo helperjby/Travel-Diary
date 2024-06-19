@@ -2,7 +2,6 @@ package com.traveldiary.be.dto;
 
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.traveldiary.be.dto.WritingPhotoDTO;
 
 import java.time.LocalDate;
 import java.util.List;
