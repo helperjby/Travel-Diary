@@ -16,7 +16,7 @@ public class Like {
 
     @ManyToOne
     @JoinColumn(name = "write_id", nullable = false)
-    private WritingDiary write; // 다이어리 엔트리와의 연관 관계
+    private WritingDiary writingDiary; // 다이어리 엔트리와의 연관 관계
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)

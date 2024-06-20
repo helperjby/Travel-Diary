@@ -1,8 +1,6 @@
 package com.traveldiary.be.dto;
 
-
 import com.fasterxml.jackson.annotation.JsonInclude;
-
 import java.time.LocalDate;
 import java.util.List;
 
@@ -18,12 +16,13 @@ public class WritingDTO {
     private List<String> photo;  // 첨부된 사진 파일 리스트
     private String url; // 지도 URL
     private List<WritingPhotoDTO> writingPhotos; // 추가된 필드
+    private Integer likeCount; // 좋아요 개수 추가
 
     // 기본 생성자
     public WritingDTO() {}
 
     // 모든 필드를 초기화하는 생성자
-    public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos) {
+    public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos, Integer likeCount) {
         this.id = id; // 추가된 필드
         this.title = title;
         this.content = content;
@@ -34,81 +33,40 @@ public class WritingDTO {
         this.photo = photo;
         this.url = url;
         this.writingPhotos = writingPhotos; // 추가된 필드
+        this.likeCount = likeCount; // 좋아요 개수 추가
     }
 
     // Getters and Setters
-    public Integer getId() { return id; } // 추가된 메서드
-    public void setId(Integer id) { this.id = id; } // 추가된 메서드
+    public Integer getId() { return id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
 
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
 
-    public String getContent() {
-        return content;
-    }
+    public LocalDate getTravel_date() { return travel_date; }
+    public void setTravel_date(LocalDate travel_date) { this.travel_date = travel_date; }
 
-    public void setContent(String content) {
-        this.content = content;
-    }
+    public LocalDate getStart_date() { return start_date; }
+    public void setStart_date(LocalDate start_date) { this.start_date = start_date; }
 
-    public LocalDate getTravel_date() {
-        return travel_date;
-    }
+    public LocalDate getFinal_date() { return final_date; }
+    public void setFinal_date(LocalDate final_date) { this.final_date = final_date; }
 
-    public void setTravel_date(LocalDate travel_date) {
-        this.travel_date = travel_date;
-    }
+    public Boolean getIs_public() { return is_public; }
+    public void setIs_public(Boolean is_public) { this.is_public = is_public; }
 
-    public LocalDate getStart_date() {
-        return start_date;
-    }
+    public List<String> getPhoto() { return photo; }
+    public void setPhoto(List<String> photo) { this.photo = photo; }
 
-    public void setStart_date(LocalDate start_date) {
-        this.start_date = start_date;
-    }
+    public String getUrl() { return url; }
+    public void setUrl(String url) { this.url = url; }
 
-    public LocalDate getFinal_date() {
-        return final_date;
-    }
+    public List<WritingPhotoDTO> getWritingPhotos() { return writingPhotos; }
+    public void setWritingPhotos(List<WritingPhotoDTO> writingPhotos) { this.writingPhotos = writingPhotos; }
 
-    public void setFinal_date(LocalDate final_date) {
-        this.final_date = final_date;
-    }
-
-    public Boolean getIs_public() {
-        return is_public;
-    }
-
-    public void setIs_public(Boolean is_public) {
-        this.is_public = is_public;
-    }
-
-    public List<String> getPhoto() {
-        return photo;
-    }
-
-    public void setPhoto(List<String> photo) {
-        this.photo = photo;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public List<WritingPhotoDTO> getWritingPhotos() {
-        return writingPhotos;
-    }
-
-    public void setWritingPhotos(List<WritingPhotoDTO> writingPhotos) {
-        this.writingPhotos = writingPhotos;
-    }
+    public Integer getLikeCount() { return likeCount; }
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; } // 좋아요 개수 setter 추가
 }

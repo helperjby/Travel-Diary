@@ -1,6 +1,6 @@
 package com.traveldiary.be.controller;
 
-import com.traveldiary.be.entity.WritingDiary;
+import com.traveldiary.be.dto.WritingDTO;
 import com.traveldiary.be.service.DiaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -23,12 +23,12 @@ public class DiaryController {
      * @return 사용자의 모든 일기 리스트
      */
     @GetMapping
-    public ResponseEntity<List<WritingDiary>> getUserDiaries(@RequestParam Integer userId) {
+    public ResponseEntity<List<WritingDTO>> getUserDiaries(@RequestParam Integer userId) {
         try {
-            List<WritingDiary> diaries = diaryService.getUserDiaries(userId);
+            List<WritingDTO> diaries = diaryService.getUserDiaries(userId);
             return ResponseEntity.ok(diaries);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);  // 예외 발생 시 에러 처리
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -42,10 +42,10 @@ public class DiaryController {
     @GetMapping("/{diaryId}")
     public ResponseEntity<?> getDiaryById(@PathVariable Integer diaryId, @RequestParam Integer userId) {
         try {
-            WritingDiary diary = diaryService.getDiaryById(diaryId, userId);
+            WritingDTO diary = diaryService.getDiaryById(diaryId, userId);
             return ResponseEntity.ok(diary);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());  // 예외 발생 시 에러 메시지 반환
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -57,12 +57,12 @@ public class DiaryController {
      * @return 특정 날짜의 일기 리스트
      */
     @GetMapping("/date")
-    public ResponseEntity<List<WritingDiary>> getDiariesByDate(@RequestParam LocalDate date, @RequestParam Integer userId) {
+    public ResponseEntity<List<WritingDTO>> getDiariesByDate(@RequestParam LocalDate date, @RequestParam Integer userId) {
         try {
-            List<WritingDiary> diaries = diaryService.getDiariesByDate(date, userId);
+            List<WritingDTO> diaries = diaryService.getDiariesByDate(date, userId);
             return ResponseEntity.ok(diaries);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);  // 예외 발생 시 에러 처리
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -75,12 +75,12 @@ public class DiaryController {
      * @return 특정 여행 기간의 일기 리스트
      */
     @GetMapping("/period")
-    public ResponseEntity<List<WritingDiary>> getDiariesByPeriod(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate, @RequestParam Integer userId) {
+    public ResponseEntity<List<WritingDTO>> getDiariesByPeriod(@RequestParam LocalDate startDate, @RequestParam LocalDate endDate, @RequestParam Integer userId) {
         try {
-            List<WritingDiary> diaries = diaryService.getDiariesByPeriod(startDate, endDate, userId);
+            List<WritingDTO> diaries = diaryService.getDiariesByPeriod(startDate, endDate, userId);
             return ResponseEntity.ok(diaries);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);  // 예외 발생 시 에러 처리
+            return ResponseEntity.badRequest().body(null);
         }
     }
 
@@ -90,12 +90,12 @@ public class DiaryController {
      * @return 공개된 일기 리스트
      */
     @GetMapping("/public")
-    public ResponseEntity<List<WritingDiary>> getPublicDiaries() {
+    public ResponseEntity<List<WritingDTO>> getPublicDiaries() {
         try {
-            List<WritingDiary> diaries = diaryService.getPublicDiaries();
+            List<WritingDTO> diaries = diaryService.getPublicDiaries();
             return ResponseEntity.ok(diaries);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);  // 예외 발생 시 에러 처리
+            return ResponseEntity.badRequest().body(null);
         }
     }
 }

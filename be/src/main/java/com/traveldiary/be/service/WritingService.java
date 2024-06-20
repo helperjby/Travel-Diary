@@ -100,7 +100,7 @@ public class WritingService {
                         .map(photoName -> {
                             WritingPhoto writingPhoto = new WritingPhoto();
                             writingPhoto.setPhoto(photoName);
-                            writingPhoto.setDiary(finalSavedDiary);
+                            writingPhoto.setWritingDiary(finalSavedDiary);
                             writingPhoto.setRepresentativeImage(false);
                             return writingPhoto;
                         })
@@ -117,7 +117,7 @@ public class WritingService {
         } else {
             WritingPhoto defaultPhoto = new WritingPhoto();
             defaultPhoto.setPhoto(representativeImageUrl.substring(representativeImageUrl.lastIndexOf('/') + 1));
-            defaultPhoto.setDiary(finalSavedDiary);
+            defaultPhoto.setWritingDiary(finalSavedDiary);
             defaultPhoto.setRepresentativeImage(true); // 대표 이미지 설정
             savedDiary.setWritingPhoto(List.of(defaultPhoto));
         }
@@ -207,7 +207,7 @@ public class WritingService {
                         .map(photoName -> {
                             WritingPhoto writingPhoto = new WritingPhoto();
                             writingPhoto.setPhoto(photoName);
-                            writingPhoto.setDiary(finalDiary);
+                            writingPhoto.setWritingDiary(finalDiary);
                             writingPhoto.setRepresentativeImage(false);
                             return writingPhoto;
                         })
@@ -224,7 +224,7 @@ public class WritingService {
         } else {
             WritingPhoto defaultPhoto = new WritingPhoto();
             defaultPhoto.setPhoto(representativeImageUrl.substring(representativeImageUrl.lastIndexOf('/') + 1));
-            defaultPhoto.setDiary(finalDiary);
+            defaultPhoto.setWritingDiary(finalDiary);
             defaultPhoto.setRepresentativeImage(true); // 대표 이미지 설정
             diary.getWritingPhoto().add(defaultPhoto);
         }
