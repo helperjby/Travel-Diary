@@ -38,6 +38,9 @@ public class Users {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "bio")
+    private String bio;
+
     @Column(name = "access_token")
     private String accessToken;
 
