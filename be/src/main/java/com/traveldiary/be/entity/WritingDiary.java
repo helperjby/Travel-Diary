@@ -50,18 +50,19 @@ public class WritingDiary {
     @JsonBackReference
     private Album album;  // 앨범
 
-    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "writingDiary", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<WritingPhoto> writingPhoto;  // 사진들
+
+    @OneToMany(mappedBy = "writingDiary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Like> likes;  // 좋아요 목록
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;  // 생성 시간
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;  // 수정 시간
-
-    @Column(name = "representative_image")
-    private String representativeImage;  // 대표 이미지
 
     @PrePersist
     protected void onCreate() {

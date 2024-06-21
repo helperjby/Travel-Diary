@@ -21,7 +21,7 @@ public class WritingPhoto {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "write_id")
     @JsonBackReference("diary-photos")
-    private WritingDiary diary;  // 사진이 속한 일기 엔티티
+    private WritingDiary writingDiary;  // 사진이 속한 일기 엔티티
 
     @Column(name = "representative_image")
     private Boolean representativeImage;  // 대표 이미지
@@ -30,10 +30,9 @@ public class WritingPhoto {
         this.representativeImage = false;
     }
 
-    public WritingPhoto(String photo, WritingDiary diary, Boolean representativeImage) {
+    public WritingPhoto(String photo, WritingDiary writingDiary, Boolean representativeImage) {
         this.photo = photo;
-        this.diary = diary;
+        this.writingDiary = writingDiary;
         this.representativeImage = representativeImage;
     }
 }
-
