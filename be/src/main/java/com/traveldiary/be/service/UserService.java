@@ -44,7 +44,9 @@ public class UserService {
         if (optionalUser.isPresent()) {
             Users user = optionalUser.get();
             user.setNickname(updateNicknameRequestDto.getNickname());
+
             userRepository.save(user);
+
             return user;
         } else {
             throw new RuntimeException("User not found");
@@ -52,13 +54,16 @@ public class UserService {
     }
 
     public Users updateProfileImage(Integer userId, MultipartFile profileImageFile) throws IOException {
+
         Optional<Users> optionalUser = userRepository.findById(userId);
 
         if (optionalUser.isPresent()) {
             Users user = optionalUser.get();
             String profileImagePath = saveProfileImage(profileImageFile); // 프로필 이미지를 저장하는 메서드
             user.setProfileImage(profileImagePath);
+
             userRepository.save(user);
+
             return user;
         } else {
             throw new RuntimeException("User not found");
@@ -66,12 +71,15 @@ public class UserService {
     }
 
     public Users updateBio(Integer userId, UpdateBioRequestDto updateBioRequestDto) {
+
         Optional<Users> optionalUser = userRepository.findById(userId);
 
         if (optionalUser.isPresent()) {
             Users user = optionalUser.get();
             user.setBio(updateBioRequestDto.getBio());
+
             userRepository.save(user);
+
             return user;
         } else {
             throw new RuntimeException("User not found");
@@ -94,4 +102,6 @@ public class UserService {
 
         return filePath;
     }
+
 }
+
