@@ -6,7 +6,7 @@ import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WritingDTO {
-    private Integer id; // 추가된 필드
+    private Integer id;
     private String title;  // 제목
     private String content;  // 내용
     private LocalDate travel_date;  // 여행 날짜
@@ -15,15 +15,16 @@ public class WritingDTO {
     private Boolean is_public;  // 공개/비공개 설정
     private List<String> photo;  // 첨부된 사진 파일 리스트
     private String url; // 지도 URL
-    private List<WritingPhotoDTO> writingPhotos; // 추가된 필드
-    private Integer likeCount; // 좋아요 개수 추가
+    private List<WritingPhotoDTO> writingPhotos;
+    private Integer likeCount; // 좋아요 개수
+    private Integer albumId; // 앨범 ID
 
     // 기본 생성자
     public WritingDTO() {}
 
     // 모든 필드를 초기화하는 생성자
     public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos, Integer likeCount) {
-        this.id = id; // 추가된 필드
+        this.id = id;
         this.title = title;
         this.content = content;
         this.travel_date = travel_date;
@@ -32,8 +33,9 @@ public class WritingDTO {
         this.is_public = is_public;
         this.photo = photo;
         this.url = url;
-        this.writingPhotos = writingPhotos; // 추가된 필드
-        this.likeCount = likeCount; // 좋아요 개수 추가
+        this.writingPhotos = writingPhotos;
+        this.likeCount = likeCount; // 좋아요 개수
+        this.albumId = albumId; // 앨범 ID
     }
 
     // Getters and Setters
@@ -69,4 +71,7 @@ public class WritingDTO {
 
     public Integer getLikeCount() { return likeCount; }
     public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; } // 좋아요 개수 setter 추가
+
+    public Integer getAlbumId() { return albumId; }
+    public void setAlbumId(Integer albumId) { this.albumId = albumId; } // 앨범 ID setter 추가
 }

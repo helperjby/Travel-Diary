@@ -1,14 +1,17 @@
 package com.traveldiary.be.controller;
 
 import com.traveldiary.be.dto.AlbumDTO;
+import com.traveldiary.be.dto.WritingPhotoDTO;
 import com.traveldiary.be.entity.WritingPhoto;
 import com.traveldiary.be.service.AlbumService;
 import com.traveldiary.be.service.WritingPhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/api/albums")
@@ -89,18 +92,59 @@ public class AlbumController {
     }
 
     /**
-     * 앨범의 여행 기간에 해당하는 사진들을 조회하는 메서드
+     * 앨범에 해당하는 사진 조회 메서드
      *
      * @param albumId 앨범 ID
+     * @param userId 사용자 ID
      * @return 앨범에 속한 모든 사진 리스트를 반환
      */
     @GetMapping("/{albumId}/photos")
-    public ResponseEntity<List<WritingPhoto>> getPhotosByAlbum(@PathVariable int albumId) {
+    public ResponseEntity<List<WritingPhoto>> getPhotosByAlbum(@PathVariable int albumId, @RequestParam Integer userId) {
         try {
-            List<WritingPhoto> photos = writingPhotoService.getPhotosByAlbum(albumId);
+            List<WritingPhoto> photos = writingPhotoService.getPhotosByAlbum(albumId, userId);
             return ResponseEntity.ok(photos);
         } catch (RuntimeException e) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
     }
+
+
+    /**
+     * 특정 사진의 상세 정보를 조회하는 메서드
+     *
+     * @param photoId 사진 ID
+     * @param userId 사용자 ID
+     * @return 사진의 상세 정보를 반환
+     */
+//    @GetMapping("/photos/{photoId}")
+//    public ResponseEntity<WritingPhotoDTO> getPhotoById(@PathVariable int photoId, @RequestParam Integer userId) {
+//        try {
+//            WritingPhotoDTO photo = writingPhotoService.getPhotoById(photoId, userId);
+//            return ResponseEntity.ok(photo);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.badRequest().body(null);
+//        }
+//    }
+
+    @GetMapping("/photos/{photoId}")
+    public ResponseEntity<WritingPhotoDTO> getPhotoById(@PathVariable int photoId, @RequestParam Integer userId) {
+        try {
+            WritingPhotoDTO photo = writingPhotoService.getPhotoById(photoId, userId);
+            if (photo == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(photo);
+        } catch (NoSuchElementException e) {
+            // 예외 처리: 해당 사진이 없는 경우
+            return ResponseEntity.notFound().build();
+        } catch (Exception e) {
+            // 기타 예외 처리
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
 }
+
+
+

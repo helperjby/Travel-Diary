@@ -7,7 +7,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
-@Table(name = "USERS")
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
@@ -38,6 +38,9 @@ public class Users {
     @Column(name = "provider_id")
     private String providerId;
 
+    @Column(name = "bio")
+    private String bio;
+
     @Column(name = "access_token")
     private String accessToken;
 
@@ -53,6 +56,18 @@ public class Users {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonManagedReference
     private List<Album> diaries;  // 사용자와 연관된 일기들
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<Comment> comments;  // 사용자와 연관된 댓글들
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CommentRe> reComments;  // 사용자와 연관된 대댓글들
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
+    private List<CommentReport> commentReports;  // 사용자와 연관된 신고들
 
     @PrePersist
     protected void onCreate() {

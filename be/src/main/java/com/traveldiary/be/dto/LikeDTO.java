@@ -4,12 +4,12 @@ import java.time.LocalDateTime;
 
 public class LikeDTO {
 
-    private int id;
-    private int userId;
-    private int writingDiaryId;
-    private LocalDateTime createdAt;
-    private int likeCount;
-    private boolean isLiked;
+    private int id;  // 좋아요 ID
+    private int userId;  // 사용자 ID
+    private int writingDiaryId;  // 일기 ID
+    private LocalDateTime createdAt;  // 생성 시간
+    private int likeCount;  // 좋아요 수
+    private boolean isLiked;  // 좋아요 여부
 
     // Getters and Setters
     public int getId() {

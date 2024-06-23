@@ -27,6 +27,7 @@ public class WritingController {
         this.userService = userService;
     }
 
+    // 새로운 일기 작성
     @PostMapping(consumes = {"multipart/form-data"})
     public ResponseEntity<WritingDTO> createWriting(
             @RequestParam Integer userId,
@@ -34,10 +35,6 @@ public class WritingController {
             @RequestPart(required = false) List<MultipartFile> photo) {
         try {
             logger.info("POST 요청 수신됨 - userId: {} 및 diaryDto: {}", userId, diaryDto);
-
-            if (diaryDto.getFinal_date() == null) {
-                throw new IllegalArgumentException("최종 날짜는 null일 수 없습니다.");
-            }
 
             WritingDTO diary = diaryService.createDiary(diaryDto, userId, photo);
 
@@ -52,6 +49,7 @@ public class WritingController {
         }
     }
 
+    // 기존 일기 수정
     @PutMapping(value = "/{diaryId}", consumes = {"multipart/form-data"})
     public ResponseEntity<WritingDTO> updateWriting(
             @PathVariable int diaryId,
@@ -60,10 +58,6 @@ public class WritingController {
             @RequestPart(required = false) List<MultipartFile> photo) {
         try {
             logger.info("PUT 요청 수신됨 - diaryId: {}, userId: {} 및 diaryDto: {}", diaryId, userId, diaryDto);
-
-            if (diaryDto.getFinal_date() == null) {
-                throw new IllegalArgumentException("최종 날짜는 null일 수 없습니다.");
-            }
 
             WritingDTO diary = diaryService.updateDiary(diaryId, diaryDto, userId, photo);
 
@@ -78,14 +72,25 @@ public class WritingController {
         }
     }
 
+    // 일기 삭제
     @DeleteMapping("/{diaryId}")
-    public ResponseEntity<Void> deleteWriting(@PathVariable int diaryId, @RequestParam Integer userId) {
+    public ResponseEntity<String> deleteWriting(@PathVariable int diaryId, @RequestParam Integer userId) {
         try {
             diaryService.deleteDiary(diaryId, userId);
-            return ResponseEntity.noContent().build();
+            //return ResponseEntity.noContent().build();
+            return ResponseEntity.ok("삭제가 완료됐습니다.");
         } catch (Exception e) {
             logger.error("Exception: {}", e.getMessage(), e);
-            return ResponseEntity.status(500).build();
+            //return ResponseEntity.status(500).build();
+            return ResponseEntity.status(500).body("삭제중 에러 발생");
         }
     }
+
+    // 특정 앨범으로 일기 이동
+    @PutMapping("/{diaryId}/move-to-album/{albumId}")
+    public ResponseEntity<WritingDTO> moveDiaryToAlbum(@PathVariable int diaryId, @PathVariable int albumId, @RequestParam Integer userId) {
+        WritingDTO updatedDiary = diaryService.moveDiaryToAlbum(diaryId, albumId, userId);
+        return ResponseEntity.ok(updatedDiary);
+    }
+
 }

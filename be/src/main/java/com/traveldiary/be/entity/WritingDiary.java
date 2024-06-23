@@ -2,9 +2,11 @@ package com.traveldiary.be.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.*;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -25,17 +27,17 @@ public class WritingDiary {
     @Column(name = "content", nullable = false, columnDefinition = "TEXT")
     private String content;  // 내용
 
-    @Column(name = "travel_date", nullable = false)
+    @Column(name = "travel_date", nullable = true)
     private LocalDate travelDate;  // 여행 날짜
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date", nullable = true)
     private LocalDate startDate;  // 여행 시작 날짜
 
-    @Column(name = "final_date", nullable = false)
+    @Column(name = "final_date", nullable = true)
     private LocalDate finalDate;  // 여행 종료 날짜
 
     @Column(name = "is_public", nullable = false)
-    private Boolean isPublic;  // 공개 여부
+    private Boolean isPublic = false; // 기본값은 false로 설정
 
     @Column(name = "url")
     private String url;  // URL
@@ -45,8 +47,8 @@ public class WritingDiary {
     @JsonBackReference
     private Users user;  // 사용자
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "album_id")
+    @ManyToOne
+    @JoinColumn(name = "album_id", nullable = true)
     @JsonBackReference
     private Album album;  // 앨범
 

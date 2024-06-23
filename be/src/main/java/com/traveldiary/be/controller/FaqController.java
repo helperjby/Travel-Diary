@@ -16,6 +16,7 @@ public class FaqController {
     @Autowired
     private FaqService faqService;
 
+    //모든 FAQ를 가져옴
     @GetMapping
     public List<FaqDTO> getFAQs() {
         return faqService.getAllFAQs();

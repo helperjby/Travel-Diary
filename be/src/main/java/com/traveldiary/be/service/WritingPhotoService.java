@@ -1,10 +1,13 @@
 package com.traveldiary.be.service;
 
+import com.traveldiary.be.dto.WritingPhotoDTO;
 import com.traveldiary.be.repository.WritingPhotoRepository;
 import com.traveldiary.be.repository.AlbumRepository;
 import com.traveldiary.be.entity.WritingDiary;
 import com.traveldiary.be.entity.WritingPhoto;
 import com.traveldiary.be.entity.Album;
+import com.traveldiary.be.entity.Users;
+import com.traveldiary.be.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -30,6 +33,9 @@ public class WritingPhotoService {
 
     @Autowired
     private AlbumRepository albumRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * 파일 저장 메서드
@@ -97,14 +103,52 @@ public class WritingPhotoService {
      * 앨범에 해당하는 사진 조회 메서드
      *
      * @param albumId 앨범 ID
+     * @param userId 사용자 ID
      * @return 사진 목록
      */
-    public List<WritingPhoto> getPhotosByAlbum(int albumId) {
+    public List<WritingPhoto> getPhotosByAlbum(int albumId, int userId) {
+        Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
+        if (!album.getUser().equals(user)) {
+            throw new RuntimeException("사용자 ID가 앨범의 소유자가 아닙니다.");
+        }
+
         List<WritingPhoto> photos = new ArrayList<>();
         for (WritingDiary diary : album.getWritingDiaries()) {
             photos.addAll(diary.getWritingPhoto());
         }
         return photos;
+    }
+
+
+    /**
+     * 특정 사진의 상세 정보를 조회하는 메서드
+     *
+     * @param photoId 사진 ID
+     * @param userId 사용자 ID
+     * @return 사진의 상세 정보를 담은 WritingPhotoDTO
+     */
+    public WritingPhotoDTO getPhotoById(int photoId, int userId) {
+        Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+        WritingPhoto photo = writingPhotoRepository.findById(photoId)
+                .orElseThrow(() -> new RuntimeException("사진을 찾을 수 없습니다."));
+        if (!photo.getWritingDiary().getUser().equals(user)) {
+            throw new RuntimeException("사용자 ID가 사진의 소유자가 아닙니다.");
+        }
+        return convertToDTO(photo);
+    }
+
+    /**
+     * WritingPhoto 엔티티를 WritingPhotoDTO로 변환하는 메서드
+     *
+     * @param photo WritingPhoto 엔티티
+     * @return 변환된 WritingPhotoDTO
+     */
+    private WritingPhotoDTO convertToDTO(WritingPhoto photo) {
+        WritingPhotoDTO photoDTO = new WritingPhotoDTO();
+        photoDTO.setPhoto(photo.getPhoto());
+        photoDTO.setPhotoId(photo.getId());
+        photoDTO.setRepresentativeImage(photo.getRepresentativeImage());
+        return photoDTO;
     }
 }

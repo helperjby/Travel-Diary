@@ -1,6 +1,7 @@
 package com.traveldiary.be.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -23,10 +24,10 @@ public class Album {
     @Column(name = "name", nullable = false)
     private String name;  // 앨범 이름
 
-    @Column(name = "start_date", nullable = false)
+    @Column(name = "start_date")
     private LocalDate startDate;  // 시작 날짜
 
-    @Column(name = "final_date", nullable = false)
+    @Column(name = "final_date")
     private LocalDate finalDate;  // 종료 날짜
 
     @Column(name = "created_at", nullable = false)
@@ -41,5 +42,14 @@ public class Album {
     private Users user;  // 사용자 (객체 관계를 유지)
 
     @OneToMany(mappedBy = "album", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonManagedReference
     private List<WritingDiary> writingDiaries = new ArrayList<>();  // 일기들 초기화
+
+    // 기본 생성자
+    public Album() {}
+
+    // 새로운 생성자 추가
+    public Album(int id) {
+        this.id = id;
+    }
 }

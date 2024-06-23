@@ -6,7 +6,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FaqDTO {
-    private int id;
-    private String question;
-    private String answer;
+    private int id;  // FAQ ID
+    private String question;  // 질문
+    private String answer;  // 답변
 }

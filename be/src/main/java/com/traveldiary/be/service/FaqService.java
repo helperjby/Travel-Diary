@@ -23,6 +23,7 @@ public class FaqService {
 
     private List<FaqDTO> faqs;
 
+    // 애플리케이션이 시작될 때 FAQ 데이터를 로드하고 db에 저장
     @EventListener
     public void onApplicationEvent(ContextRefreshedEvent event) {
         ObjectMapper mapper = new ObjectMapper();
@@ -34,12 +35,14 @@ public class FaqService {
         }
     }
 
+    // 모든 FAQ를 조회
     public List<FaqDTO> getAllFAQs() {
         return faqRepository.findAll().stream()
                 .map(this::convertToDTO)
                 .collect(Collectors.toList());
     }
 
+    // Faq 엔티티를 FaqDTO로 변환
     private FaqDTO convertToDTO(Faq faq) {
         FaqDTO faqDTO = new FaqDTO();
         faqDTO.setId(faq.getId());
@@ -48,6 +51,7 @@ public class FaqService {
         return faqDTO;
     }
 
+    // FaqDTO를 Faq 엔티티로 변환
     private Faq convertToEntity(FaqDTO faqDTO) {
         Faq faq = new Faq();
         faq.setId(faqDTO.getId());

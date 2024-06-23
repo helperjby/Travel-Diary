@@ -24,7 +24,11 @@ public class WritingPhoto {
     private WritingDiary writingDiary;  // 사진이 속한 일기 엔티티
 
     @Column(name = "representative_image")
-    private Boolean representativeImage;  // 대표 이미지
+    private Boolean representativeImage;  //  이미지
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id", nullable = true)
+    private Album album;  // 앨범
 
     public WritingPhoto() {
         this.representativeImage = false;

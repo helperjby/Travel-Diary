@@ -1,9 +1,9 @@
 package com.traveldiary.be.dto;
 
 public class WritingPhotoDTO {
-    private String photo;
-    private int photoId;
-    private Boolean representativeImage; // 대표 이미지
+    private String photo;  // 사진 URL 또는 경로
+    private int photoId;  // 사진 ID
+    private Boolean representativeImage; // 대표 이미지 여부
 
     // 기본 생성자
     public WritingPhotoDTO() {}
