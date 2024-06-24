@@ -23,7 +23,7 @@ public class WritingDTO {
     public WritingDTO() {}
 
     // 모든 필드를 초기화하는 생성자
-    public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos, Integer likeCount) {
+    public WritingDTO(Integer id, String title, String content, LocalDate travel_date, LocalDate start_date, LocalDate final_date, Boolean is_public, List<String> photo, String url, List<WritingPhotoDTO> writingPhotos, Integer likeCount, Integer albumId) {
         this.id = id;
         this.title = title;
         this.content = content;
@@ -34,7 +34,7 @@ public class WritingDTO {
         this.photo = photo;
         this.url = url;
         this.writingPhotos = writingPhotos;
-        this.likeCount = likeCount; // 좋아요 개수
+        this.likeCount = likeCount;
         this.albumId = albumId; // 앨범 ID
     }
 
@@ -70,8 +70,8 @@ public class WritingDTO {
     public void setWritingPhotos(List<WritingPhotoDTO> writingPhotos) { this.writingPhotos = writingPhotos; }
 
     public Integer getLikeCount() { return likeCount; }
-    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; } // 좋아요 개수 setter 추가
+    public void setLikeCount(Integer likeCount) { this.likeCount = likeCount; }
 
     public Integer getAlbumId() { return albumId; }
-    public void setAlbumId(Integer albumId) { this.albumId = albumId; } // 앨범 ID setter 추가
+    public void setAlbumId(Integer albumId) { this.albumId = albumId; }
 }

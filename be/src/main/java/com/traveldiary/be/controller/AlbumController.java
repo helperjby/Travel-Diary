@@ -99,14 +99,15 @@ public class AlbumController {
      * @return 앨범에 속한 모든 사진 리스트를 반환
      */
     @GetMapping("/{albumId}/photos")
-    public ResponseEntity<List<WritingPhoto>> getPhotosByAlbum(@PathVariable int albumId, @RequestParam Integer userId) {
+    public ResponseEntity<List<WritingPhotoDTO>> getPhotosByAlbum(@PathVariable int albumId, @RequestParam Integer userId) {
         try {
-            List<WritingPhoto> photos = writingPhotoService.getPhotosByAlbum(albumId, userId);
+            List<WritingPhotoDTO> photos = writingPhotoService.getPhotosByAlbum(albumId, userId);
             return ResponseEntity.ok(photos);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
         }
     }
+
 
 
     /**

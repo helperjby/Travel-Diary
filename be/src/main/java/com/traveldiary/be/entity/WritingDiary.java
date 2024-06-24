@@ -66,6 +66,9 @@ public class WritingDiary {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;  // 수정 시간
 
+    @Column(name = "delete_at")
+    private LocalDateTime deleteAt;  // 삭제 시간
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

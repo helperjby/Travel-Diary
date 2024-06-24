@@ -21,6 +21,7 @@ import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class WritingPhotoService {
@@ -55,6 +56,11 @@ public class WritingPhotoService {
         }
 
         for (MultipartFile file : files) {
+            if (file.isEmpty()) {
+                fileNames.add(null); // 파일이 비어있다면 null을 추가
+                continue;
+            }
+
             String originalFilename = file.getOriginalFilename();
             String uniqueFileName = generateUniqueFileName(originalFilename, diary.getId());
             Path destinationPath = uploadPath.resolve(uniqueFileName).normalize();
@@ -66,6 +72,8 @@ public class WritingPhotoService {
 
         return fileNames;
     }
+
+
 
     /**
      * 고유한 파일 이름 생성 메서드
@@ -106,18 +114,42 @@ public class WritingPhotoService {
      * @param userId 사용자 ID
      * @return 사진 목록
      */
-    public List<WritingPhoto> getPhotosByAlbum(int albumId, int userId) {
+    @Value("${representative.image-url}")
+    private String representativeImageUrl;
+
+    /**
+     * 앨범에 해당하는 사진 조회 메서드
+     *
+     * @param albumId 앨범 ID
+     * @param userId 사용자 ID
+     * @return 사진 목록
+     */
+    public List<WritingPhotoDTO> getPhotosByAlbum(int albumId, int userId) {
         Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
         if (!album.getUser().equals(user)) {
             throw new RuntimeException("사용자 ID가 앨범의 소유자가 아닙니다.");
         }
 
-        List<WritingPhoto> photos = new ArrayList<>();
+        List<WritingPhotoDTO> photoDTOs = new ArrayList<>();
         for (WritingDiary diary : album.getWritingDiaries()) {
-            photos.addAll(diary.getWritingPhoto());
+            List<WritingPhoto> photos = diary.getWritingPhoto();
+            if (photos == null || photos.isEmpty()) {
+                // 기본 이미지를 추가
+                WritingPhotoDTO defaultPhotoDTO = new WritingPhotoDTO(representativeImageUrl, 0, true);
+                photoDTOs.add(defaultPhotoDTO);
+            } else {
+                for (WritingPhoto photo : photos) {
+                    WritingPhotoDTO photoDTO = new WritingPhotoDTO(
+                            photo.getPhoto() != null ? photo.getPhoto() : representativeImageUrl,
+                            photo.getId(),
+                            photo.getRepresentativeImage()
+                    );
+                    photoDTOs.add(photoDTO);
+                }
+            }
         }
-        return photos;
+        return photoDTOs;
     }
 
 

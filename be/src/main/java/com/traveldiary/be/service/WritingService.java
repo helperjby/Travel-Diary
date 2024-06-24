@@ -52,7 +52,6 @@ public class WritingService {
      * @return 작성된 일기 정보를 반환
      */
     public WritingDTO createDiary(WritingDTO diaryDto, Integer userId, List<MultipartFile> photos) {
-
         Optional<Users> optionalUser = userRepository.findById(userId);
         if (optionalUser.isEmpty()) {
             throw new RuntimeException("사용자를 찾을 수 없습니다.");
@@ -76,28 +75,30 @@ public class WritingService {
         diary.setUser(user);
 
         // 앨범 설정 로직
+        Album album;
         if (diaryDto.getAlbumId() != null) {
-            Album album = albumRepository.findById(diaryDto.getAlbumId())
+            album = albumRepository.findById(diaryDto.getAlbumId())
                     .orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
-            diary.setAlbum(album);
         } else {
-            Album defaultAlbum = albumRepository.findById(1)
+            album = albumRepository.findById(1)
                     .orElseThrow(() -> new RuntimeException("기본 앨범을 찾을 수 없습니다."));
-            diary.setAlbum(defaultAlbum);
         }
+        diary.setAlbum(album);
 
         WritingDiary savedDiary = writingRepository.save(diary);
+        final WritingDiary finalSavedDiary = savedDiary; // effectively final로 변환
 
         // 사진 저장 로직
-        final WritingDiary finalSavedDiary = savedDiary; // effectively final로 변환
+        List<WritingPhoto> writingPhotos = new ArrayList<>();
         if (photos != null && !photos.isEmpty()) {
             try {
                 List<String> photoNames = writingPhotoService.storeFiles(photos, finalSavedDiary);
-                List<WritingPhoto> writingPhotos = photoNames.stream()
+                writingPhotos = photoNames.stream()
                         .map(photoName -> {
                             WritingPhoto writingPhoto = new WritingPhoto();
-                            writingPhoto.setPhoto(photoName);
+                            writingPhoto.setPhoto(photoName != null ? photoName : representativeImageUrl);
                             writingPhoto.setWritingDiary(finalSavedDiary);
+                            writingPhoto.setAlbum(album);  // 앨범 설정 추가
                             writingPhoto.setRepresentativeImage(false);
                             return writingPhoto;
                         })
@@ -107,23 +108,29 @@ public class WritingService {
                     writingPhotos.get(0).setRepresentativeImage(true); // 첫 번째 사진을 대표 이미지로 설정
                 }
 
-                savedDiary.setWritingPhoto(new ArrayList<>(writingPhotos));
+                finalSavedDiary.setWritingPhoto(new ArrayList<>(writingPhotos));
             } catch (IOException e) {
                 throw new RuntimeException("사진 업로드 중 오류 발생", e);
             }
         } else {
             WritingPhoto defaultPhoto = new WritingPhoto();
-            defaultPhoto.setPhoto(representativeImageUrl.substring(representativeImageUrl.lastIndexOf('/') + 1));
+            defaultPhoto.setPhoto(representativeImageUrl); // 기본 이미지 설정
             defaultPhoto.setWritingDiary(finalSavedDiary);
+            defaultPhoto.setAlbum(album);  // 앨범 설정 추가
             defaultPhoto.setRepresentativeImage(true); // 대표 이미지 설정
-            savedDiary.setWritingPhoto(new ArrayList<>(List.of(defaultPhoto)));
+            writingPhotos.add(defaultPhoto);
+            finalSavedDiary.setWritingPhoto(writingPhotos);
         }
 
-        savedDiary = writingRepository.save(savedDiary);
+        savedDiary = writingRepository.save(finalSavedDiary);
 
         // WritingPhotoDTO 리스트 설정
         List<WritingPhotoDTO> writingPhotoDTOs = savedDiary.getWritingPhoto().stream()
-                .map(wp -> new WritingPhotoDTO(wp.getPhoto(), wp.getId(), wp.getRepresentativeImage()))
+                .map(wp -> new WritingPhotoDTO(
+                        wp.getPhoto() != null ? wp.getPhoto() : representativeImageUrl,
+                        wp.getId(),
+                        wp.getRepresentativeImage()
+                ))
                 .collect(Collectors.toList());
 
         WritingDTO responseDto = new WritingDTO();
@@ -160,19 +167,24 @@ public class WritingService {
         WritingDiary diary = optionalDiary.get();
 
         // 일기 업데이트
+        Album album;
+        if (diaryDto.getAlbumId() != null) {
+            album = albumRepository.findById(diaryDto.getAlbumId())
+                    .orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
+        } else {
+            album = albumRepository.findById(1)
+                    .orElseThrow(() -> new RuntimeException("기본 앨범을 찾을 수 없습니다."));
+        }
+        diary.setAlbum(album);
+
         diary.setTitle(diaryDto.getTitle());
         diary.setContent(diaryDto.getContent());
-//        diary.setTravelDate(diaryDto.getTravel_date());
-//        diary.setStartDate(diaryDto.getStart_date() != null ? diaryDto.getStart_date() : LocalDate.of(9999, 12, 31));
-//        diary.setFinalDate(diaryDto.getFinal_date() != null ? diaryDto.getFinal_date() : LocalDate.of(9999, 12, 31));
-
         diary.setTravelDate(diaryDto.getTravel_date() != null ? diaryDto.getTravel_date() : LocalDate.now());
         diary.setStartDate(diaryDto.getStart_date() != null ? diaryDto.getStart_date() : LocalDate.now());
         diary.setFinalDate(diaryDto.getFinal_date() != null ? diaryDto.getFinal_date() : LocalDate.now());
 
         diary.setIsPublic(diaryDto.getIs_public());
         diary.setUrl(diaryDto.getUrl());
-        diary.setAlbum(new Album(1));
 
         // 기존 사진 삭제 및 파일 삭제
         if (diary.getWritingPhoto() != null && !diary.getWritingPhoto().isEmpty()) {
@@ -185,15 +197,16 @@ public class WritingService {
         }
 
         // 새로운 사진 저장
-        final WritingDiary finalDiary = diary; // effectively final로 변환
+        List<WritingPhoto> writingPhotos = new ArrayList<>();
         if (photos != null && !photos.isEmpty()) {
             try {
-                List<String> photoNames = writingPhotoService.storeFiles(photos, finalDiary);
-                List<WritingPhoto> writingPhotos = photoNames.stream()
+                List<String> photoNames = writingPhotoService.storeFiles(photos, diary);
+                writingPhotos = photoNames.stream()
                         .map(photoName -> {
                             WritingPhoto writingPhoto = new WritingPhoto();
-                            writingPhoto.setPhoto(photoName);
-                            writingPhoto.setWritingDiary(finalDiary);
+                            writingPhoto.setPhoto(photoName != null ? photoName : representativeImageUrl);
+                            writingPhoto.setWritingDiary(diary);
+                            writingPhoto.setAlbum(album);  // 앨범 설정 추가
                             writingPhoto.setRepresentativeImage(false);
                             return writingPhoto;
                         })
@@ -209,17 +222,24 @@ public class WritingService {
             }
         } else {
             WritingPhoto defaultPhoto = new WritingPhoto();
-            defaultPhoto.setPhoto(representativeImageUrl.substring(representativeImageUrl.lastIndexOf('/') + 1));
-            defaultPhoto.setWritingDiary(finalDiary);
+            defaultPhoto.setPhoto(representativeImageUrl); // 기본 이미지 설정
+            defaultPhoto.setWritingDiary(diary);
+            defaultPhoto.setAlbum(album);  // 앨범 설정 추가
             defaultPhoto.setRepresentativeImage(true); // 대표 이미지 설정
-            diary.getWritingPhoto().add(defaultPhoto);
+            defaultPhoto.setId(0); // 기본 이미지의 photoId를 0으로 설정
+            writingPhotos.add(defaultPhoto);
+            diary.setWritingPhoto(writingPhotos);
         }
 
         WritingDiary updatedDiary = writingRepository.save(diary);
 
         // WritingPhotoDTO 리스트 설정
         List<WritingPhotoDTO> writingPhotoDTOs = updatedDiary.getWritingPhoto().stream()
-                .map(wp -> new WritingPhotoDTO(wp.getPhoto(), wp.getId(), wp.getRepresentativeImage()))
+                .map(wp -> new WritingPhotoDTO(
+                        wp.getPhoto() != null ? wp.getPhoto() : representativeImageUrl,
+                        wp.getId(),
+                        wp.getRepresentativeImage()
+                ))
                 .collect(Collectors.toList());
 
         WritingDTO responseDto = new WritingDTO();
@@ -232,9 +252,13 @@ public class WritingService {
         responseDto.setIs_public(updatedDiary.getIsPublic());
         responseDto.setUrl(updatedDiary.getUrl());
         responseDto.setWritingPhotos(writingPhotoDTOs);
+        responseDto.setAlbumId(updatedDiary.getAlbum().getId()); // 앨범 ID 설정
 
         return responseDto;
     }
+
+
+
 
     public void deleteDiary(int diaryId, Integer userId) {
         Optional<WritingDiary> optionalDiary = writingRepository.findById(diaryId);
