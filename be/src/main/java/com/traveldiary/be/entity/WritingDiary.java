@@ -2,7 +2,6 @@ package com.traveldiary.be.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 import jakarta.persistence.*;
@@ -56,6 +55,10 @@ public class WritingDiary {
     @JsonIgnore
     private List<WritingPhoto> writingPhoto;  // 사진들
 
+    @OneToMany(mappedBy = "diary", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<Comment> comments;  // 댓글들
+
     @OneToMany(mappedBy = "writingDiary", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Like> likes;  // 좋아요 목록
@@ -65,9 +68,6 @@ public class WritingDiary {
 
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;  // 수정 시간
-
-    @Column(name = "delete_at")
-    private LocalDateTime deleteAt;  // 삭제 시간
 
     @PrePersist
     protected void onCreate() {

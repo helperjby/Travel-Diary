@@ -22,4 +22,11 @@ public interface WritingRepository extends JpaRepository<WritingDiary, Integer> 
 
     @Query("SELECT MAX(w.id) FROM WritingDiary w")
     Integer findMaxId();//최대 id를 찾는 메서드
+
+    @Query("SELECT w FROM WritingDiary w WHERE w.isPublic = true ORDER BY w.createdAt DESC")
+    List<WritingDiary> findPublicDiariesOrderByCreatedAtDesc();// 공개된 일기들을 작성일 기준으로 정렬하여 가져오는 메서드
+
+    @Query("SELECT w FROM WritingDiary w WHERE w.isPublic = true ORDER BY SIZE(w.likes) DESC, w.createdAt DESC")
+    List<WritingDiary> findPublicDiariesOrderByLikesDesc();//좋아요 많은 순으로 정렬
+
 }
