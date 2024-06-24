@@ -157,7 +157,8 @@ public class DiaryEntryAIService {
                     .append(", 질문: ").append(response.getQuestion())
                     .append(", 답변: ").append(response.getResponse()).append("\n");
         }
-        promptBuilder.append("이 내용을 토대로 여행일기의 제목과 내용을 작성해줘.");
+        //promptBuilder.append("이 내용을 토대로 여행일기의 제목과 내용을 작성해줘.");
+        promptBuilder.append("이 내용을 토대로 여행일기의 제목과 내용을 작성해줘. 다음 내용을 반영해줘 : 좀 더 상세한 감정 묘사, 사건의 순서 명확히 하기, 긍정적인 어조 유지, 산문 형식으로 작성할 것, 800자 제한,피드백은 글에서 드러나지 않음, 결과물을 하나의 문장으로 표현하는 제목을 작성");
 
         String prompt = promptBuilder.toString();
         String gptContent = generateDiaryContent(prompt);
