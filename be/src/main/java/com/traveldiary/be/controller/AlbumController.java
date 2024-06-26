@@ -2,7 +2,6 @@ package com.traveldiary.be.controller;
 
 import com.traveldiary.be.dto.AlbumDTO;
 import com.traveldiary.be.dto.WritingPhotoDTO;
-import com.traveldiary.be.entity.WritingPhoto;
 import com.traveldiary.be.service.AlbumService;
 import com.traveldiary.be.service.WritingPhotoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,7 +108,6 @@ public class AlbumController {
     }
 
 
-
     /**
      * 특정 사진의 상세 정보를 조회하는 메서드
      *
@@ -127,6 +125,13 @@ public class AlbumController {
 //        }
 //    }
 
+    /**
+     * 특정 사진의 상세 정보를 조회하는 메서드
+     *
+     * @param photoId 사진 ID
+     * @param userId 사용자 ID
+     * @return 사진의 상세 정보를 반환
+     */
     @GetMapping("/photos/{photoId}")
     public ResponseEntity<WritingPhotoDTO> getPhotoById(@PathVariable int photoId, @RequestParam Integer userId) {
         try {
@@ -136,14 +141,11 @@ public class AlbumController {
             }
             return ResponseEntity.ok(photo);
         } catch (NoSuchElementException e) {
-            // 예외 처리: 해당 사진이 없는 경우
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            // 기타 예외 처리
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
-
 
 }
 

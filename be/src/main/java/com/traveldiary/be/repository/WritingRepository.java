@@ -4,7 +4,9 @@ import com.traveldiary.be.entity.WritingDiary;
 import com.traveldiary.be.entity.Users;
 import com.traveldiary.be.entity.Album;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -28,5 +30,10 @@ public interface WritingRepository extends JpaRepository<WritingDiary, Integer> 
 
     @Query("SELECT w FROM WritingDiary w WHERE w.isPublic = true ORDER BY SIZE(w.likes) DESC, w.createdAt DESC")
     List<WritingDiary> findPublicDiariesOrderByLikesDesc();//좋아요 많은 순으로 정렬
+
+    //특정 앨범에 포함된 모든 일기 삭제
+    @Modifying
+    @Query("DELETE FROM WritingDiary wd WHERE wd.album.id = :albumId")
+    void deleteByAlbumId(@Param("albumId") int albumId);
 
 }

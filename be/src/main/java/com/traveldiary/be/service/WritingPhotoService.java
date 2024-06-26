@@ -1,17 +1,21 @@
 package com.traveldiary.be.service;
 
 import com.traveldiary.be.dto.WritingPhotoDTO;
-import com.traveldiary.be.repository.WritingPhotoRepository;
-import com.traveldiary.be.repository.AlbumRepository;
-import com.traveldiary.be.entity.WritingDiary;
-import com.traveldiary.be.entity.WritingPhoto;
 import com.traveldiary.be.entity.Album;
 import com.traveldiary.be.entity.Users;
+import com.traveldiary.be.entity.WritingDiary;
+import com.traveldiary.be.entity.WritingPhoto;
+import com.traveldiary.be.repository.AlbumRepository;
 import com.traveldiary.be.repository.UserRepository;
+import com.traveldiary.be.repository.WritingPhotoRepository;
+import com.traveldiary.be.repository.WritingRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,8 +30,13 @@ import java.util.stream.Collectors;
 @Service
 public class WritingPhotoService {
 
+    private static final Logger logger = LoggerFactory.getLogger(WritingPhotoService.class);
+
     @Value("${file.upload-dir}")
     private String uploadDir;
+
+    @Value("${representative.image-url}")
+    private String representativeImageUrl;
 
     @Autowired
     private WritingPhotoRepository writingPhotoRepository;
@@ -38,26 +47,28 @@ public class WritingPhotoService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private WritingRepository writingRepository;
+
     /**
-     * 파일 저장 메서드
+     * 파일을 저장하는 메서드
      *
-     * @param files 파일 목록
+     * @param files 저장할 파일 리스트
      * @param diary 일기 엔티티
-     * @return 저장된 파일 이름 목록
-     * @throws IOException 파일 저장 중 오류 발생 시
+     * @return 저장된 파일 이름 리스트
+     * @throws IOException 파일 저장 중 발생할 수 있는 예외
      */
     public List<String> storeFiles(List<MultipartFile> files, WritingDiary diary) throws IOException {
         List<String> fileNames = new ArrayList<>();
         Path uploadPath = Paths.get(uploadDir).toAbsolutePath().normalize();
 
-        // 업로드 디렉토리가 존재하지 않으면 생성
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
         for (MultipartFile file : files) {
             if (file.isEmpty()) {
-                fileNames.add(null); // 파일이 비어있다면 null을 추가
+                fileNames.add(representativeImageUrl); // 기본 이미지를 추가
                 continue;
             }
 
@@ -73,10 +84,8 @@ public class WritingPhotoService {
         return fileNames;
     }
 
-
-
     /**
-     * 고유한 파일 이름 생성 메서드
+     * 고유한 파일 이름을 생성하는 메서드
      *
      * @param originalFilename 원본 파일 이름
      * @param diaryId 일기 ID
@@ -93,38 +102,101 @@ public class WritingPhotoService {
     }
 
     /**
-     * 파일 삭제 메서드
+     * 파일을 삭제하는 메서드
      *
-     * @param fileName 파일 이름
+     * @param fileName 삭제할 파일 이름
      */
     public void deleteFile(String fileName) {
-        Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
-        try {
-            Files.deleteIfExists(filePath);
-        } catch (IOException e) {
-            // 로그에 오류 기록
-            e.printStackTrace();
+        if (fileName != null && !fileName.isEmpty()) {
+            Path filePath = Paths.get(uploadDir).resolve(fileName).normalize();
+            try {
+                Files.deleteIfExists(filePath);
+            } catch (IOException e) {
+                logger.error("파일 삭제 실패: " + fileName, e);
+            }
         }
     }
 
     /**
-     * 앨범에 해당하는 사진 조회 메서드
+     * 일기에 사진을 추가하는 메서드
      *
-     * @param albumId 앨범 ID
+     * @param diaryId 일기 ID
      * @param userId 사용자 ID
-     * @return 사진 목록
+     * @param photos 추가할 사진 리스트
+     * @return 추가된 사진 DTO 리스트
+     * @throws IOException 파일 저장 중 발생할 수 있는 예외
      */
-    @Value("${representative.image-url}")
-    private String representativeImageUrl;
+    public List<WritingPhotoDTO> addPhotosToDiary(int diaryId, int userId, List<MultipartFile> photos) throws IOException {
+        WritingDiary diary = writingRepository.findById(diaryId)
+                .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
+
+        List<WritingPhoto> writingPhotos = new ArrayList<>();
+        if (photos != null && !photos.isEmpty()) {
+            List<String> photoNames = storeFiles(photos, diary);
+            writingPhotos = photoNames.stream()
+                    .map(photoName -> {
+                        WritingPhoto writingPhoto = new WritingPhoto();
+                        writingPhoto.setPhoto(photoName);
+                        writingPhoto.setWritingDiary(diary);
+                        writingPhoto.setAlbum(diary.getAlbum());
+                        writingPhoto.setRepresentativeImage(false);
+                        return writingPhoto;
+                    })
+                    .collect(Collectors.toList());
+
+            if (!writingPhotos.isEmpty()) {
+                writingPhotos.get(0).setRepresentativeImage(true);
+            }
+
+            writingPhotoRepository.saveAll(writingPhotos);
+        } else {
+            WritingPhoto defaultPhoto = new WritingPhoto();
+            defaultPhoto.setPhoto(representativeImageUrl);
+            defaultPhoto.setWritingDiary(diary);
+            defaultPhoto.setAlbum(diary.getAlbum());
+            defaultPhoto.setRepresentativeImage(true);
+            writingPhotos.add(defaultPhoto);
+            writingPhotoRepository.save(defaultPhoto);
+        }
+
+        return writingPhotos.stream()
+                .map(wp -> new WritingPhotoDTO(wp.getPhoto(), wp.getId(), wp.getRepresentativeImage()))
+                .collect(Collectors.toList());
+    }
 
     /**
-     * 앨범에 해당하는 사진 조회 메서드
+     * 일기에 있는 사진을 수정하는 메서드
+     *
+     * @param diaryId 일기 ID
+     * @param userId 사용자 ID
+     * @param photos 수정할 사진 리스트
+     * @return 수정된 사진 DTO 리스트
+     * @throws IOException 파일 저장 중 발생할 수 있는 예외
+     */
+    public List<WritingPhotoDTO> updatePhotosInDiary(int diaryId, int userId, List<MultipartFile> photos) throws IOException {
+        WritingDiary diary = writingRepository.findById(diaryId)
+                .orElseThrow(() -> new RuntimeException("일기를 찾을 수 없습니다."));
+
+        if (diary.getWritingPhoto() != null && !diary.getWritingPhoto().isEmpty()) {
+            List<WritingPhoto> existingPhotos = new ArrayList<>(diary.getWritingPhoto());
+            for (WritingPhoto existingPhoto : existingPhotos) {
+                deleteFile(existingPhoto.getPhoto());
+                writingPhotoRepository.delete(existingPhoto);
+            }
+            diary.getWritingPhoto().clear();
+        }
+
+        return addPhotosToDiary(diaryId, userId, photos);
+    }
+
+    /**
+     * 앨범에 속한 사진을 조회하는 메서드
      *
      * @param albumId 앨범 ID
      * @param userId 사용자 ID
-     * @return 사진 목록
+     * @return 앨범에 속한 사진 DTO 리스트
      */
-    public List<WritingPhotoDTO> getPhotosByAlbum(int albumId, int userId) {
+    public List<WritingPhotoDTO> getPhotosByAlbum(int albumId, Integer userId) {
         Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         Album album = albumRepository.findById(albumId).orElseThrow(() -> new RuntimeException("앨범을 찾을 수 없습니다."));
         if (!album.getUser().equals(user)) {
@@ -135,7 +207,6 @@ public class WritingPhotoService {
         for (WritingDiary diary : album.getWritingDiaries()) {
             List<WritingPhoto> photos = diary.getWritingPhoto();
             if (photos == null || photos.isEmpty()) {
-                // 기본 이미지를 추가
                 WritingPhotoDTO defaultPhotoDTO = new WritingPhotoDTO(representativeImageUrl, 0, true);
                 photoDTOs.add(defaultPhotoDTO);
             } else {
@@ -152,15 +223,14 @@ public class WritingPhotoService {
         return photoDTOs;
     }
 
-
     /**
-     * 특정 사진의 상세 정보를 조회하는 메서드
+     * 사진 ID로 사진을 조회하는 메서드
      *
      * @param photoId 사진 ID
      * @param userId 사용자 ID
-     * @return 사진의 상세 정보를 담은 WritingPhotoDTO
+     * @return 사진 DTO
      */
-    public WritingPhotoDTO getPhotoById(int photoId, int userId) {
+    public WritingPhotoDTO getPhotoById(int photoId, Integer userId) {
         Users user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
         WritingPhoto photo = writingPhotoRepository.findById(photoId)
                 .orElseThrow(() -> new RuntimeException("사진을 찾을 수 없습니다."));
@@ -171,10 +241,10 @@ public class WritingPhotoService {
     }
 
     /**
-     * WritingPhoto 엔티티를 WritingPhotoDTO로 변환하는 메서드
+     * WritingPhoto 엔티티를 DTO로 변환하는 메서드
      *
-     * @param photo WritingPhoto 엔티티
-     * @return 변환된 WritingPhotoDTO
+     * @param photo 사진 엔티티
+     * @return 사진 DTO
      */
     private WritingPhotoDTO convertToDTO(WritingPhoto photo) {
         WritingPhotoDTO photoDTO = new WritingPhotoDTO();

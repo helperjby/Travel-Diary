@@ -72,10 +72,10 @@ public class WritingDiary {
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-    }
+    }//현재시간
 
     @PreUpdate
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
-    }
+    }//현재시간
 }
