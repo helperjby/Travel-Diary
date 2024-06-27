@@ -34,6 +34,7 @@ public class FeedService {
         // 일기 목록을 FeedDTO로 변환
         return publicDiaries.stream().map(diary -> {
             FeedDTO feedDTO = new FeedDTO();
+            feedDTO.setId(diary.getId());
             feedDTO.setRepresentativeImage(diary.getWritingPhoto().stream()
                     .filter(photo -> photo.getRepresentativeImage() != null && photo.getRepresentativeImage())
                     .findFirst()

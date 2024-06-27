@@ -3,6 +3,7 @@ package com.traveldiary.be.dto;
 import java.time.LocalDateTime;
 
 public class FeedDTO {
+    private int id; //일기 id
     private String representativeImage;
     private String title;
     private String profileImage;  // 작성자의 프로필 이미지
@@ -12,6 +13,14 @@ public class FeedDTO {
     private LocalDateTime createdAt;  // 일기 작성일
 
     // Getters and Setters
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getRepresentativeImage() {
         return representativeImage;
     }

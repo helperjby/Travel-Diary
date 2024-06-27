@@ -10,6 +10,9 @@ COPY gradle ./gradle
 COPY build.gradle .
 COPY settings.gradle .
 
+# Ensure the Gradle wrapper has execution permissions
+RUN chmod +x gradlew
+
 # Copy the application source code
 COPY src ./src
 
