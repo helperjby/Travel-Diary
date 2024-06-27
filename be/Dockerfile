@@ -16,6 +16,9 @@ RUN chmod +x gradlew
 # Copy the application source code
 COPY src ./src
 
+# Copy the application properties to ensure server.address is set
+COPY src/main/resources/application.properties ./src/main/resources/application.properties
+
 # Build the application
 RUN ./gradlew clean build -x test
 
@@ -36,6 +39,16 @@ COPY .env .env
 
 # Copy the packaged jar from the first stage
 COPY --from=build /app/build/libs/*.jar app.jar
+
+# Copy AWS credentials file (Make sure you have .aws directory in your source)
+COPY .aws /root/.aws
+
+# Copy faqs.json to the appropriate location
+COPY src/main/resources/faqs.json /app/faqs.json
+
+# Ensure the server listens on all network interfaces
+RUN echo "server.address=0.0.0.0" >> /app/application.properties
+RUN echo "server.port=8080" >> /app/application.properties
 
 # Run the jar file
 ENTRYPOINT ["java","-jar","app.jar"]

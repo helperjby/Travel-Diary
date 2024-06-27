@@ -1,6 +1,7 @@
 package com.traveldiary.be.controller;
 
 import com.traveldiary.be.dto.WritingDTO;
+import com.traveldiary.be.dto.AlbumDTO;
 import com.traveldiary.be.service.DiaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,26 @@ public class DiaryController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+
+    /**
+     * 특정 사용자의 특정 앨범의 모든 일기 조회
+     *
+     * @param albumId 앨범 ID
+     * @param userId 사용자 ID
+     * @return 사용자의 모든 일기 리스트
+     */
+    @GetMapping("/album/{albumId}")
+    public ResponseEntity<List<WritingDTO>> getUserDiariesByAlbumId(@PathVariable Integer albumId, @RequestParam Integer userId) {
+        try {
+            List<WritingDTO> diaries = diaryService.getUserDiariesByAlbumId(albumId, userId);
+            return ResponseEntity.ok(diaries);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+
 
     /**
      * 특정 일기 조회

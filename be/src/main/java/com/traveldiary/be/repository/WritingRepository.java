@@ -36,4 +36,8 @@ public interface WritingRepository extends JpaRepository<WritingDiary, Integer> 
     @Query("DELETE FROM WritingDiary wd WHERE wd.album.id = :albumId")
     void deleteByAlbumId(@Param("albumId") int albumId);
 
+    // 특정 사용자의 특정 앨범의 모든 일기 조회
+    @Query("SELECT wd FROM WritingDiary wd WHERE wd.album.id = :albumId AND wd.user.id = :userId")
+    List<WritingDiary> findByAlbumIdAndUserId(@Param("albumId") int albumId, @Param("userId") int userId);
+
 }

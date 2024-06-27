@@ -2,6 +2,7 @@ package com.traveldiary.be.service;
 
 import com.traveldiary.be.dto.WritingDTO;
 import com.traveldiary.be.dto.WritingPhotoDTO;
+import com.traveldiary.be.dto.AlbumDTO;
 import com.traveldiary.be.entity.WritingDiary;
 import com.traveldiary.be.entity.Users;
 import com.traveldiary.be.repository.WritingRepository;
@@ -89,6 +90,24 @@ public class DiaryService {
         logger.info("Fetched diary by ID: {} for user: {}", diaryId, userId);
         return convertToWritingDTO(diary);
     }
+
+
+
+    /**
+     * 특정 사용자의 특정 앨범의 모든 일기 조회
+     * @param albumId 앨범 ID
+     * @param userId 사용자 ID
+     * @return 사용자의 모든 일기 리스트
+     */
+    public List<WritingDTO> getUserDiariesByAlbumId(Integer albumId, Integer userId) {
+        // 특정 앨범과 사용자로 일기 조회
+        List<WritingDiary> diaries = writingRepository.findByAlbumIdAndUserId(albumId, userId);
+        logger.info("Fetched diaries for album: {} and user: {}", albumId, userId);
+        return diaries.stream().map(this::convertToWritingDTO).collect(Collectors.toList());
+    }
+
+
+
 
     /**
      * 특정 날짜의 일기 조회 메서드
