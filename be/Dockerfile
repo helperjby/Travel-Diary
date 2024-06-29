@@ -40,15 +40,15 @@ COPY .env .env
 # Copy the packaged jar from the first stage
 COPY --from=build /app/build/libs/*.jar app.jar
 
-# Copy AWS credentials file (Make sure you have .aws directory in your source)
-COPY .aws /root/.aws
-
 # Copy faqs.json to the appropriate location
 COPY src/main/resources/faqs.json /app/faqs.json
 
 # Ensure the server listens on all network interfaces
 RUN echo "server.address=0.0.0.0" >> /app/application.properties
 RUN echo "server.port=8080" >> /app/application.properties
+
+# Uncomment this line if you have the .aws directory in your context
+# COPY .aws /root/.aws
 
 # Run the jar file
 ENTRYPOINT ["java","-jar","app.jar"]

@@ -21,6 +21,14 @@ public class BeApplication {
         System.setProperty("DATASOURCE_USERNAME", dotenv.get("DATASOURCE_USERNAME"));
         System.setProperty("DATASOURCE_PASSWORD", dotenv.get("DATASOURCE_PASSWORD"));
 
+        // Set AWS system properties
+        System.setProperty("AWS_S3_BUCKET_NAME", dotenv.get("AWS_S3_BUCKET_NAME"));
+        System.setProperty("AWS_S3_UPLOAD_DIR", dotenv.get("AWS_S3_UPLOAD_DIR"));
+        System.setProperty("REPRESENTATIVE_IMAGE_URL", dotenv.get("REPRESENTATIVE_IMAGE_URL"));
+        System.setProperty("CLOUD_AWS_CREDENTIALS_ACCESS_KEY", dotenv.get("CLOUD_AWS_CREDENTIALS_ACCESS_KEY"));
+        System.setProperty("CLOUD_AWS_CREDENTIALS_SECRET_KEY", dotenv.get("CLOUD_AWS_CREDENTIALS_SECRET_KEY"));
+        System.setProperty("CLOUD_AWS_REGION_STATIC_S3", dotenv.get("CLOUD_AWS_REGION_STATIC_S3"));
+
         SpringApplication.run(BeApplication.class, args);
     }
 
