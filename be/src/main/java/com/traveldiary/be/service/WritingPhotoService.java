@@ -76,12 +76,15 @@ public class WritingPhotoService {
 
             String originalFilename = file.getOriginalFilename();
             String uniqueFileName = generateUniqueFileName(originalFilename, diary.getId());
+            String contentType = getContentType(originalFilename);
 
             // S3에 파일 업로드
             s3Client.putObject(
                     PutObjectRequest.builder()
                             .bucket(bucketName)
                             .key(uploadDir + uniqueFileName)
+                            .contentType(contentType)// Content-Type 설정
+                            .contentDisposition("inline")
                             .build(),
                     RequestBody.fromInputStream(file.getInputStream(), file.getSize())
             );
@@ -92,6 +95,51 @@ public class WritingPhotoService {
 
         return fileUrls;
     }
+
+    /**
+     * 파일의 Content-Type을 결정하는 메서드
+     *
+     * @param fileName 파일 이름
+     * @return Content-Type 문자열
+     */
+    private String getContentType(String fileName) {
+        String contentType;
+        String fileExtension = getFileExtension(fileName);
+
+        switch (fileExtension.toLowerCase()) {
+            case ".jpg":
+            case ".jpeg":
+                contentType = "image/jpeg";
+                break;
+            case ".png":
+                contentType = "image/png";
+                break;
+            case ".gif":
+                contentType = "image/gif";
+                break;
+            default:
+                contentType = "application/octet-stream";
+                break;
+        }
+
+        return contentType;
+    }
+
+    /**
+     * 파일의 확장자를 추출하는 메서드
+     *
+     * @param filename 파일 이름
+     * @return 파일 확장자
+     */
+    private String getFileExtension(String filename) {
+        int lastDotIndex = filename.lastIndexOf('.');
+        return (lastDotIndex != -1) ? filename.substring(lastDotIndex) : "";
+    }
+
+
+
+
+
 
     /**
      * 고유한 파일 이름을 생성하는 메서드

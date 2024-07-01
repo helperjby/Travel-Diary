@@ -40,8 +40,8 @@ COPY .env .env
 # Copy the packaged jar from the first stage
 COPY --from=build /app/build/libs/*.jar app.jar
 
-# Copy faqs.json to the appropriate location
-COPY src/main/resources/faqs.json /app/faqs.json
+# Copy the faqs.json file to the appropriate location within the classpath
+COPY src/main/resources/faqs.json /app/resources/faqs.json
 
 # Ensure the server listens on all network interfaces
 RUN echo "server.address=0.0.0.0" >> /app/application.properties
