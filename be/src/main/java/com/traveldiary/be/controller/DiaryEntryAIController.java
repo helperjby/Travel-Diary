@@ -28,14 +28,6 @@ public class DiaryEntryAIController {
         return diaryEntryAIService.getRandomQuestion(keyword);
     }
 
-    // 사용자가 답변한 내용을 저장
-//    @PostMapping("/responses")
-//    public List<DiaryEntryAI> saveUserResponses(@RequestParam int userId, @RequestBody DiaryEntryAIRequest request) {
-//        System.out.println("사용자 답변 저장 - 사용자 ID: " + userId);
-//        return diaryEntryAIService.saveUserResponses(request, userId);
-//    }
-
-
     // 사용자가 답변한 내용을 저장하고 writeId를 반환
     @PostMapping("/responses")
     public Map<String, Object> saveUserResponses(@RequestParam int userId, @RequestBody DiaryEntryAIRequest request) {
