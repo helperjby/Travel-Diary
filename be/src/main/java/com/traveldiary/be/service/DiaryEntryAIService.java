@@ -232,7 +232,40 @@ public class DiaryEntryAIService {
     }
 
     // 사용자가 답변한 내용을 저장하고 특정 write_id에 대한 답변만 반환
-    public List<DiaryEntryAI> saveUserResponses(DiaryEntryAIRequest request, int userId) {
+//    public List<DiaryEntryAI> saveUserResponses(DiaryEntryAIRequest request, int userId) {
+//        Users user = userRepository.findById(userId)
+//                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+//
+//        List<DiaryEntryAI> diaryEntryAIs = new ArrayList<>();
+//        WritingDiary writingDiary = getOrCreateActiveDiary(user);
+//        int savedResponseCount = getUserResponsesByWriteIdAndUserId(writingDiary.getId(), userId).size();
+//
+//        for (int i = 0; i < request.getKeywords().size(); i++) {
+//            if (savedResponseCount >= 6) {
+//                writingDiary = createEmptyDiary(user);
+//                savedResponseCount = 0;
+//            }
+//
+//            String keyword = request.getKeywords().get(i);
+//            String question = request.getQuestions().get(i);
+//            String response = request.getResponses().get(i);
+//
+//            DiaryEntryAI diaryEntryAI = new DiaryEntryAI();
+//            diaryEntryAI.setUser(user);
+//            diaryEntryAI.setKeyword(keyword);
+//            diaryEntryAI.setQuestion(question);
+//            diaryEntryAI.setResponse(response);
+//            diaryEntryAI.setWritingDiary(writingDiary);
+//
+//            diaryEntryAIs.add(diaryEntryAIRepository.save(diaryEntryAI));
+//            savedResponseCount++;
+//        }
+//
+//        return diaryEntryAIs;
+//    }
+
+    // 사용자가 답변한 내용을 저장하고 특정 write_id에 대한 답변만 반환
+    public Map<String, Object> saveUserResponses(DiaryEntryAIRequest request, int userId) {
         Users user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
@@ -261,8 +294,13 @@ public class DiaryEntryAIService {
             savedResponseCount++;
         }
 
-        return diaryEntryAIs;
+        Map<String, Object> result = new HashMap<>();
+        result.put("diaryEntryAIs", diaryEntryAIs);
+        result.put("writeId", writingDiary.getId());
+
+        return result;
     }
+
 
     // 활성화된 일기 가져오기 또는 새로운 일기 생성
     public WritingDiary getOrCreateActiveDiary(Users user) {

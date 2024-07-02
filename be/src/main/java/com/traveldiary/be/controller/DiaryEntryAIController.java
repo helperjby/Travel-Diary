@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/ai-diaries")
@@ -28,8 +29,16 @@ public class DiaryEntryAIController {
     }
 
     // 사용자가 답변한 내용을 저장
+//    @PostMapping("/responses")
+//    public List<DiaryEntryAI> saveUserResponses(@RequestParam int userId, @RequestBody DiaryEntryAIRequest request) {
+//        System.out.println("사용자 답변 저장 - 사용자 ID: " + userId);
+//        return diaryEntryAIService.saveUserResponses(request, userId);
+//    }
+
+
+    // 사용자가 답변한 내용을 저장하고 writeId를 반환
     @PostMapping("/responses")
-    public List<DiaryEntryAI> saveUserResponses(@RequestParam int userId, @RequestBody DiaryEntryAIRequest request) {
+    public Map<String, Object> saveUserResponses(@RequestParam int userId, @RequestBody DiaryEntryAIRequest request) {
         System.out.println("사용자 답변 저장 - 사용자 ID: " + userId);
         return diaryEntryAIService.saveUserResponses(request, userId);
     }
